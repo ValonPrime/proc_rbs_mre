@@ -1,0 +1,11 @@
+[package]
+name = "proc_rbs_mre"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { version = "0.15.3", features = ["wayland", "bevy_asset", "bevy_scene", "bevy_winit", "bevy_render", "bevy_core_pipeline", "bevy_sprite", "bevy_text", "bevy_ui", "bevy_pbr", "bevy_gltf", "bevy_gilrs", "bevy_animation", "bevy_gizmos", "tonemapping_luts", "bmp", "png"], default-features = false }
+#bevy = "0.13.2"
+bevy_rapier3d = "0.29.0"
+[profile.dev.package.bevy_rapier3d]
+opt-level = 3
