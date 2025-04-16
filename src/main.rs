@@ -25,12 +25,22 @@ const DEFAULT_FRICTION: Friction = Friction::coefficient(0.0);
 fn main() {
     let bevy_default = DefaultPlugins;
     let rapier = RapierPhysicsPlugin::<NoUserData>::default();
+    let rapier_debug = RapierDebugRenderPlugin {
+        style: DebugRenderStyle {
+            collider_dynamic_color: [0.0, 1.0, 0.3, 1.0],
+            collider_kinematic_color: [90.0, 1.0, 0.3, 1.0],
+            collider_fixed_color: [180.0, 1.0, 0.4, 1.0],
+            collider_parentless_color: [270.0, 1.0, 0.4, 1.0],
+            ..default()
+        },
+        ..default()
+    };
 
     App::new()
         .add_plugins((bevy_default, rapier))
-        .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(rapier_debug)
         .add_systems(Startup, (setup_scene, setup_proc, setup_static))
-        .add_systems(Update, (convert_proc, inspect))
+        .add_systems(Update, (convert_proc, inspect, debug_rbs))
         .run();
 }
 
@@ -64,6 +74,25 @@ pub fn convert_proc(
         }
         println!("ChildAmount: {}", child_amount);
         println!("Finished");
+    }
+}
+
+pub fn debug_rbs(
+    rbs: Query<(Entity, &Transform, &RigidBody)>,
+    cols: Query<(Entity, &Transform, &Collider, &Parent), Without<RigidBody>>,
+    mut gizmos: Gizmos,
+) {
+    for (entity, transform, _) in &rbs {
+        gizmos.arrow(transform.translation, transform.translation + (Vec3::Y * 2.0), Color::srgba(1.0, 0.0, 0.0, 1.0));
+        println!("Rb: {}, Pos: {}", entity, transform.translation)
+    }
+
+    for (entity, _, _, parent) in &cols {
+        let result = rbs.get(parent.get());
+        match result {
+            Ok(_) => println!("Col: {}, Has RB parent: true", entity),
+            Err(_) => println!("Col: {}, Has RB parent: false", entity),
+        }
     }
 }
 
