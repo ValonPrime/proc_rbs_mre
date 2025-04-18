@@ -9,6 +9,9 @@ pub struct MarkerParent;
 #[derive(Component, Copy, Clone)]
 pub struct MarkerChild;
 
+// Enables/Disables the Workaround suggested in the dc
+const DO_WORKAROUND: bool = true;
+
 const LINEAR_DAMPING: f32 = 0.05;
 const ANGULAR_DAMPING: f32 = 0.05;
 
@@ -27,10 +30,10 @@ fn main() {
     let rapier = RapierPhysicsPlugin::<NoUserData>::default();
     let rapier_debug = RapierDebugRenderPlugin {
         style: DebugRenderStyle {
-            collider_dynamic_color: [0.0, 1.0, 0.3, 1.0],
-            collider_kinematic_color: [90.0, 1.0, 0.3, 1.0],
-            collider_fixed_color: [180.0, 1.0, 0.4, 1.0],
-            collider_parentless_color: [270.0, 1.0, 0.4, 1.0],
+            collider_dynamic_color: [0.0, 1.0, 0.3, 1.0], // Red
+            collider_kinematic_color: [90.0, 1.0, 0.3, 1.0], // Green
+            collider_fixed_color: [180.0, 1.0, 0.4, 1.0], // Cyan
+            collider_parentless_color: [270.0, 1.0, 0.4, 1.0], // Purple
             ..default()
         },
         ..default()
@@ -131,8 +134,13 @@ fn setup_proc(
         MarkerParent,
     ));
 
+    // Adding a fixed RB and converting that later fixes the problem
+    if DO_WORKAROUND {
+        parent.insert(RigidBody::Fixed);
+    }
+
     parent.with_children(|child_builder| {
-        let mut child = child_builder.spawn((
+        child_builder.spawn((
             Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
             MeshMaterial3d(materials.add(Color::srgb(1.0, 0.3, 0.3))),
             Transform::from_xyz(0.0, 0.0, 0.0),
